@@ -1,80 +1,82 @@
-import os
-import requests
-import redshift_connector
-import pandas as pd
-from dotenv import load_dotenv
-load_dotenv()
+from ETL.Extraction import extraction
+from ETL.Transform import transform
+from ETL.Load import load
 
-def db_connection():
+def main(subregion = "South America"):
+    """This function will run the ETL process for the weather data
+    
+    Args:
+        subregion (str, optional): Subregion to extract countries from. Defaults to "South America".
+        
+    Returns:
+        None
+            
+    """
 
-    #Connect to the cluster
-    conn = redshift_connector.connect(
-        host = os.getenv('REDSHIFT_HOST'),
-        database = os.getenv('REDSHIFT_DATABASE'),
-        port = int(os.getenv('REDSHIFT_PORT')),
-        user = os.getenv('REDSHIFT_USER'),
-        password = os.getenv('REDSHIFT_PASSWORD')
-    )
+    # ----------------- EXTRACT ----------------- #
+    # Get countries from API
 
-    # Create a Cursor object
-    cursor = conn.cursor()
-    return conn, cursor
+    # Take subregion to extract countries and return a list of countries within this
+    countries_list = extraction.country_extract(subregion)
+    print(f'Countries into subregion {subregion}:\n', countries_list, '\n')
 
-def run_query(conn, cursor, query):
+    # Create data to send to the API to get the weather of the subregion countries
+    data = {'locations': []}
+    for country in countries_list:
+        data['locations'].append({'q': country})
+    print('Data to send to API:\n', data, '\n')
+    
+    # Get weather from API
+    weather = extraction.weather_extract(data)
+
+
+    # ----------------- TRANSFORM ----------------- #
+
+    # Clean data and return it with a dataframe, returned only the relevant columns:
+    #   country
+    #   location name
+    #   temperature 
+    #   wind speed
+    #   wind direction 
+    #   pressure 
+    #   humidity 
+    #   cloud 
+    #   feels like 
+    #   visibility
+    #   last updated
+
+    weather_df = transform.weather_json_to_df(weather)
+    print('Dataframe columns: \n', weather_df.columns, '\n')
+
+
+    # ----------------- LOAD ----------------- #
     try:
-        # Query a table using the Cursor
-        cursor.execute(query)
-        conn.commit()
+
+        # Create connection to redshift
+        conn, cursor = load.db_connection()
+
+        
+        # Load 'create_weather_table' from database_scripts folder and run it
+        create_table_query = open('database_scripts/create_weather_table.sql', 'r').read()
+        load.run_query(conn, cursor, create_table_query)
+        print('Table created successfully\n')
+
+        # Make query with weather_df to load into weather table
+        query = load.make_load_query(weather_df)
+        print('Query to load into Redshift:\n', query, '\n')
+        load.run_query(conn, cursor, query)
+        print('Data loaded successfully\n')
+
+        # # View data in table # #
+        # query = 'SELECT * FROM weather'
+        # print(load.run_query(conn, cursor, query))
+
     except Exception as e:
-        print(e)
+        print('Error loading data to redshift')
+        raise e
+    
+    finally:
+        conn.close()
 
-
-    #Retrieve the query result set
-    try:
-        result = cursor.fetchall()
-        # >> (['One Hundred Years of Solitude', 'Gabriel García Márquez'], ['A Brief History of Time', 'Stephen Hawking'])
-
-        return result
-    except:
-        return 'Nothing to fetch'
-
-def get_pokemons():
-    url = 'https://pokeapi.co/api/v2/pokemon?limit=151'
-    response = requests.get(url)
-    pokemons = response.json()['results']
-    return pokemons
-
-
-### MAIN ###
-
-
-create_table_query = """
-CREATE TABLE IF NOT EXISTS pokemons (
-    id INT NOT NULL, 
-    name VARCHAR(50) NOT NULL distkey, 
-    PRIMARY KEY (id)
-) sortkey(id);
-"""
-
-select_query = """
-SELECT * FROM pokemons;
-"""
-
-# Get pokemons from API and create query to populate table
-pokemons = get_pokemons()
-populate_table_query = 'INSERT INTO pokemons (id, name) VALUES '
-for pokemon in pokemons:
-    id = pokemons.index(pokemon) + 1
-    name = pokemon['name']
-    populate_table_query += f"({id}, '{name}'),"
-
-populate_table_query = populate_table_query[:-1] + ';'
-
-conn, cursor = db_connection()
-try:
-    print(run_query(conn, cursor, create_table_query))
-    print(run_query(conn, cursor, populate_table_query))
-    print(pd.DataFrame(run_query(conn, cursor, select_query), columns=['id', 'name']))
-except Exception as e:
-    print(e)
-conn.close()
+if __name__ == '__main__':
+    main()

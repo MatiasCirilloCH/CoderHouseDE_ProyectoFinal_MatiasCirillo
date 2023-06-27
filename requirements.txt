@@ -2,4 +2,6 @@ requests
 redshift_connector
 pandas
 python-dotenv
+SQLAlchemy
+ipykernel
 ```
