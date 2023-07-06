@@ -46,6 +46,7 @@ def main(subregion = "South America"):
     #   last updated
 
     weather_df = transform.weather_json_to_df(weather)
+    print(weather_df.info())
     print('Dataframe columns: \n', weather_df.columns, '\n')
 
 
@@ -64,8 +65,19 @@ def main(subregion = "South America"):
         # Make query with weather_df to load into weather table
         query = load.make_load_query(weather_df)
         print('Query to load into Redshift:\n', query, '\n')
-        load.run_query(conn, cursor, query)
-        print('Data loaded successfully\n')
+
+        print('Loading data into Redshift...')
+        print('Checking for duplicated data...')
+        if load.validate_duplicate_data(weather_df, conn, cursor):
+            print('Data duplicated, no data loaded')
+        else:
+            print('No duplicated data, loading data...')
+            try:
+                load.run_query(conn, cursor, query)
+                print('Data loaded successfully\n')
+            except Exception as e:
+                print('Error loading data to redshift')
+                raise e
 
         # # View data in table # #
         # query = 'SELECT * FROM weather'

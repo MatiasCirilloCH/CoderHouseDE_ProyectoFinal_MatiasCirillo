@@ -10,3 +10,21 @@ Contenido en .env:
     REDSHIFT_PORT=5439
     REDSHIFT_DATABASE='DBNAME'
 --------------------------------------------------------
+
+
+## Objetivo
+El objetivo del proyecto es cargar datos de clima en una base de Redshift, obteniendo los datos desde una API la cual devuelve un JSON con distinta informacion sobre el clima en ese momento en los paises de Sud America.
+
+Se realizan dos transformaciones pequeñas en los datos que devuelve la API:
+- Conversion del dato last_update a DateTime.
+- Conversion del dato wind_direction (int) por un punto cartesiano (string) (N, NE, S, SE, E, SW, W, NW)
+
+Los datoas en la base no pueden estar duplicados, para ello se realiza una verificacion entre el nombre del pais y la ultima fecha de actualizacion de datos que tiene la API, este ultimo cambia cada 15 minutos, por lo que como minimo deberia poder almacenar informacion del clima de los paises de Sud America con un delta de 15 minutos.
+
+--------------------------------------------------------
+
+## Ejecución
+
+```bash
+python main.py
+```
