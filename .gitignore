@@ -1,4 +1,6 @@
 .env
 test.py
 main-notebook.ipynb
+postgres_data/
+logs/
 ```

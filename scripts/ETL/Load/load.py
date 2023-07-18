@@ -1,21 +1,35 @@
-import os
-import redshift_connector
+from redshift_connector import connect
 import pandas as pd
+from os import environ as env
+
+# Variables de configuración de Redshift
+REDSHIFT_HOST = env["REDSHIFT_HOST"]
+REDSHIFT_PORT = env["REDSHIFT_PORT"]
+REDSHIFT_DB = env["REDSHIFT_DB"]
+REDSHIFT_USER = env["REDSHIFT_USER"]
+REDSHIFT_PASSWORD = env["REDSHIFT_PASSWORD"]
+REDSHIFT_URL = env["REDSHIFT_URL"]
+
 
 def db_connection():
+    try:
+        #Connect to the cluster
+        print(">>> [init] Conectando a Redshift...")
+        conn = connect(
+            host=REDSHIFT_HOST,
+            port=int(REDSHIFT_PORT),
+            database=REDSHIFT_DB,
+            user=REDSHIFT_USER,
+            password=REDSHIFT_PASSWORD,
+        )
 
-    #Connect to the cluster
-    conn = redshift_connector.connect(
-        host = os.getenv('REDSHIFT_HOST'),
-        database = os.getenv('REDSHIFT_DATABASE'),
-        port = int(os.getenv('REDSHIFT_PORT')),
-        user = os.getenv('REDSHIFT_USER'),
-        password = os.getenv('REDSHIFT_PASSWORD')
-    )
-
-    # Create a Cursor object
-    cursor = conn.cursor()
-    return conn, cursor
+        # Create a Cursor object
+        cursor = conn.cursor()
+        print(">>> [init] Conexión exitosa")
+        return conn, cursor
+    except:
+        print(">>> [init] No se pudo conectar a Redshift")
+        raise Exception('No se pudo conectar a Redshift')
 
 def make_load_query(df: pd.DataFrame):
     # Create query to load data into table
