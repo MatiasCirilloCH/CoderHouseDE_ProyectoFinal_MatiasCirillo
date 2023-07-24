@@ -36,7 +36,7 @@ defaul_args = {
 }
 
 with DAG(
-    dag_id="etl_users",
+    dag_id="etl_weather",
     default_args=defaul_args,
     description="ETL de la tabla users",
     schedule="*/15 * * * *",

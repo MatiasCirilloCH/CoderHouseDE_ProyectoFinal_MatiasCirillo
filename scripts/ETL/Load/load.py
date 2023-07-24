@@ -68,8 +68,6 @@ def run_query(conn, cursor, query):
     
 
 def validate_duplicate_data(df: pd.DataFrame, conn, cursor):
-    # Create connection to redshift
-    
 
     # Make query to get all data from table
     query = 'SELECT * FROM weather'
