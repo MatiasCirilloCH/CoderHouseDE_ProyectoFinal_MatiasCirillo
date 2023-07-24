@@ -23,7 +23,7 @@ Los datoas en la base no pueden estar duplicados, para ello se realiza una verif
 
 1. Posicionarse en la carpeta raiz. A esta altura debería ver el archivo `docker-compose.yml`.
 
-3. Crear un archivo con variables de entorno llamado `.env` ubicado a la misma altura que el `docker-compose.yml`. Cuyo contenido sea:
+2. Crear un archivo con variables de entorno llamado `.env` ubicado a la misma altura que el `docker-compose.yml`. Cuyo contenido sea:
 ```bash
 REDSHIFT_HOST=...
 REDSHIFT_PORT=5439
@@ -37,14 +37,14 @@ DRIVER_PATH=/tmp/drivers/postgresql-42.5.2.jar
 
 API_KEY=...
 ```
-4. Construyo la imagen de Airflow con el Dockerfile dentro del path `docker_images/airflow/Dockerfile`.
+3. Construyo la imagen de Airflow con el Dockerfile dentro del path `docker_images/airflow/Dockerfile`.
 
-6. Ejecutar el siguiente comando para levantar los servicios de Airflow.
+4. Ejecutar el siguiente comando para levantar los servicios de Airflow.
 ```bash
 docker-compose up --build
 ```
-7. Una vez que los servicios estén levantados, ingresar a Airflow en `http://localhost:8080/`.
-8. En la pestaña `Admin -> Connections` crear una nueva conexión con los siguientes datos para Redshift:
+5. Una vez que los servicios estén levantados, ingresar a Airflow en `http://localhost:8080/`.
+6. En la pestaña `Admin -> Connections` crear una nueva conexión con los siguientes datos para Redshift:
     * Conn Id: `redshift_default`
     * Conn Type: `Amazon Redshift`
     * Host: `host de redshift`
@@ -53,11 +53,11 @@ docker-compose up --build
     * User: `usuario de redshift`
     * Password: `contraseña de redshift`
     * Port: `5439`
-10. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
+7. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
     * Key: `driver_class_path`
     * Value: `/tmp/drivers/postgresql-42.5.2.jar`
-11. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
+8. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
     * Key: `spark_scripts_dir`
     * Value: `/opt/airflow/scripts`
-12. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:00/hh:15/hh:30/hh:45).
+9. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:00/hh:15/hh:30/hh:45).
 
