@@ -39,7 +39,7 @@ with DAG(
     dag_id="etl_weather",
     default_args=defaul_args,
     description="ETL de la tabla users",
-    schedule="1,16,31,46 * * * *",
+    schedule="5,20,35,50 * * * *",
     catchup=False,
 ) as dag:
     

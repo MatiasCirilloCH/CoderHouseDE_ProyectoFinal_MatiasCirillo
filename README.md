@@ -59,5 +59,5 @@ docker-compose up --build
 8. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
     * Key: `spark_scripts_dir`
     * Value: `/opt/airflow/scripts`
-9. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:01/hh:16/hh:31/hh:46).
+9. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:05/hh:20/hh:35/hh:50).
 
