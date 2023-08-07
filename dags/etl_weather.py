@@ -1,11 +1,11 @@
-# Este es el DAG que orquesta el ETL de la tabla users
-
-from airflow import DAG
+from airflow.models import DAG, Variable
 
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 from datetime import datetime, timedelta
 
 import sys
@@ -27,12 +27,49 @@ CREATE TABLE IF NOT EXISTS weather (
     last_updated DATETIME NOT NULL
 ) sortkey(temperature);
 """
+  
+def send_task_fail(context):
+    try:
+        # Get failed task information
+        task_instance = context['task_instance']
+        task_id = task_instance.task_id
+        dag_id = task_instance.dag_id
+        execution_date = task_instance.execution_date
+        log_url = context['task_instance'].log_url
+
+        # Build email message
+        email_from  = Variable.get('SMTP_EMAIL_FROM')
+        email_to = Variable.get('SMTP_EMAIL_TO')
+        subject=f"La tarea {task_id} del DAG {dag_id} ha fallado"
+        body =  f"""
+        La tarea {task_id} del DAG {dag_id} ha fallado.
+        Fecha de ejecución: {execution_date}
+        Puedes revisar los logs aquí: {log_url}
+        """
+
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['From'] = email_from
+        msg['To'] = email_to
+        msg['Subject'] = str(Header(subject, 'utf-8'))
+
+        # Send email
+        x=smtplib.SMTP('smtp.gmail.com',587)
+        x.starttls()#
+        x.login(email_from, Variable.get('SMTP_PASSWORD'))
+        x.sendmail(Variable.get('SMTP_EMAIL_FROM'), Variable.get('SMTP_EMAIL_TO'), msg.as_string())
+        print('Exito')
+
+    except Exception as exception:
+        print(exception)
+        print('Failure')
+        raise exception
 
 defaul_args = {
     "owner": "Matias Cirillo",
     "start_date": datetime(2023, 7, 1),
     "retries": 0,
     "retry_delay": timedelta(seconds=5),
+    'on_failure_callback': send_task_fail,
 }
 
 with DAG(
@@ -57,11 +94,5 @@ with DAG(
         provide_context=True,
         dag=dag,
     )
-    
-    # ver path actual
-    # bash_task = BashOperator(
-    # task_id="bash_task",
-    # bash_command='ls /opt/airflow/scripts', 
-    # )
 
     create_table >> etl_task

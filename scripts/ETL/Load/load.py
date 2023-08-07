@@ -85,8 +85,6 @@ def validate_duplicate_data(df: pd.DataFrame, conn, cursor):
     duplicated = concat_tables.duplicated(subset=['country', 'last_updated'], keep= False).any()
 
     if duplicated:
-        # print('Data duplicated')
         return True
     else:
-        # print('Data not duplicated')
         return False

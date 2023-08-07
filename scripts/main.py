@@ -64,6 +64,7 @@ def main(subregion = "South America"):
         print('Checking for duplicated data...')
         if load.validate_duplicate_data(weather_df, conn, cursor):
             print('Data duplicated, no data loaded')
+            raise Exception('Data duplicated, no data loaded')
         else:
             print('No duplicated data, loading data...')
             try:

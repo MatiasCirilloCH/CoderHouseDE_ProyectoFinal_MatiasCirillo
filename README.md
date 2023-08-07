@@ -56,8 +56,20 @@ docker-compose up --build
 7. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
     * Key: `driver_class_path`
     * Value: `/tmp/drivers/postgresql-42.5.2.jar`
-8. En la pestaña `Admin -> Variables` crear una nueva variable con los siguientes datos:
+    ---
     * Key: `spark_scripts_dir`
     * Value: `/opt/airflow/scripts`
-9. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:05/hh:20/hh:35/hh:50).
+    ---
+    * Key: `SMTP_EMAIL_FROM`
+    * Value: `Email del cual queres enviar`
+    ---
+    * Key: `SMTP_EMAIL_TO`
+    * Value: `Email al cual queres recibir`
+    ---
+    * Key: `SMTP_PASSWORD`
+    * Value: `*******`  
+    
+    (Si usas gmail podes obtener asi tu contraseña de aplicacion: https://support.google.com/mail/answer/185833?hl=en)
+
+8. Encender el DAG `etl_weather` (el DAG se ejecuta automaticamente cada 15 minutos --> hh:05/hh:20/hh:35/hh:50).
 

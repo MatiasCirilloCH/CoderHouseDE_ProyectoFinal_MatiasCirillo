@@ -17,8 +17,5 @@ def weather_extract(data):
         weather = requests.get(url, params={'key': API_KEY, 'q': 'bulk'}, data= str(data)).json()
     except:
         raise Exception('Error in the request') 
-    
-    # Clean data and return it with a dataframe, returned only the relevant columns (location name, temperature, wind speed, wind direction, pressure, humidity, cloud, feels like, visibility, last updated)
-    # weather = pd.json_normalize(weather['bulk'])
 
     return weather
